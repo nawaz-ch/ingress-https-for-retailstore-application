@@ -161,4 +161,49 @@ retailstore.nawazshareef-kubecloud.com
 5. Wait for certificate Status: Issued.
 6. Keep the certificate in the same AWS region as your EKS/ALB.
 
+**Update Ingress Manifests with SSL Certificate ARN in 01_ingress_https_instance_mode.yaml**
+[View 01_ingress_https_instance_mode](https_retail_store_k8s_manifests/06_ingress/01_ingress_https_instance_mode.yaml)
+```bash
+## SSL Settings
+alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:339713166619:certificate/e2d65ddb-389f-48c1-a4e8-c215d56c553f
+```
+
+# Deploy Kubernetes Ingress HTTPS
+```bash
+# Apply all HTTPS manifests (includes Ingress with TLS annotations)
+kubectl apply -R -f https_retail_store_k8s_manifests/
+```
+
+# Create DNS record (Route53)
+After ALB is provisioned
+```bash
+kubectl get ingress 
+```
+
+**In Route53 → nawazshareef-kubecloud.com, create CNAME:**
+```bash
+Name: retailstore.stacksimplify.com
+Type: CNAME
+Value: <ALB-DNS-NAME>
+TTL: 60
+```
+
+# Verify Kubernetes Ingress - HTTPS
+
+```bash
+# Ingress overall
+kubectl get ingress -A
+
+# Inspect annotations, rules, and TLS
+kubectl describe ingress retail-store-https-instance-mode
+kubectl describe ingress retail-store-https-ip-mode
+
+# Test HTTPS with SNI
+curl -vk https://retailstore.nawazshareef-kubecloud.com
+```
+
+✅ **Expect a valid TLS handshake (issued by ACM) and Retail Store UI over HTTPS.**
+
+
+
 
